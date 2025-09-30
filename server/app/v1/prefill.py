@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.services.prefill_service import extract_and_save_payment_info
+from app.services.chat_prefill_service import gpt_with_prefill
 
 router = APIRouter()
 
@@ -14,5 +15,14 @@ async def prefill(request: PrefillRequest):
     try:
         extract_and_save_payment_info(request.email_text, request.model)
         return {"success": True, "message": "data extracted and written"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+    
+# POST /v1/prefill/complex
+@router.post("/prefill/complex")
+async def prefill(request: PrefillRequest):
+    try:
+        extracted =gpt_with_prefill(request.email_text, request.model)
+        return {"success": True, "message": "data extracted and written", "solution": extracted}
     except Exception as e:
         return {"success": False, "message": str(e)}
